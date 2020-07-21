@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!-- 扫描service包下所有使用注解的类型 -->
+    <context:component-scan base-package="com.xulihao.service" />
+    <!--加载数据库配置文件-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <!--数据库连接池
+    jdbc.driver=com.mysql.cj.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost:3306/ssm?serverTimezone=Asia/Shanghai
+jdbc.username=root
+jdbc.password=password
+    -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <!-- 驱动 -->
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <!-- url -->
+        <property name="url" value="${jdbc.url}"/>
+        <!-- 用户名 -->
+        <property name="username" value="${jdbc.username}"/>
+        <!-- 密码 -->
+        <property name="password" value="${jdbc.password}"/></bean>
+    <!-- 配置事务管理器 -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!-- 注入数据库连接池 -->
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!-- 配置基于注解的声明式事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+    <!--sqlsession工厂初始化-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--加载sqlmapconfig.xml 配置别名，扫描mappper等等-->
+        <property name="configLocation" value="classpath:sqlmap-config.xml" />
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!--mapper和dao的映射，注入到spring的容器中-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 注入sqlSessionFactory -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!-- 给出需要扫描Dao接口包 -->
+        <property name="basePackage" value="com.xulihao.dao"/>
+    </bean>
+</beans>
